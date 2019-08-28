@@ -1,0 +1,6 @@
+---
+Name: s3-backup-config
+---
+SilverStripe\SiteConfig\SiteConfig:
+  extensions:
+    - Chewyou\SilverstripeAssetsS3Backup\S3BackupSiteConfig
