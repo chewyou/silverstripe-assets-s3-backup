@@ -1,0 +1,35 @@
+{
+  "name": "chewyou/silverstripe-assets-s3-backup",
+  "type": "silverstripe-vendormodule",
+  "description": "Assets Backup to a S3 Bucket for SilverStripe",
+  "keywords": [
+    "silverstripe",
+    "assets",
+    "aws",
+    "s3",
+    "bucket",
+    "backup"
+  ],
+  "homepage": "https://github.com/chewyou/silverstripe-node-tree-dropdown",
+  "license": "BSD-3-Clause",
+  "authors": [
+    {
+      "name": "Ben Pickett",
+      "email": "app.benspickett@gmail.com",
+      "role": "Developer"
+    }
+  ],
+  "require": {
+    "php": "^5.6|^7.0",
+    "aws/aws-sdk-php": "^3.110"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^4.8|^5.7"
+  },
+  "extra": {
+    "expose": [
+      "css",
+      "js"
+    ]
+  }
+}
