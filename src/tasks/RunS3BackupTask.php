@@ -30,7 +30,8 @@ class RunS3BackupTask extends BuildTask {
 
         $files = $this->scanFiles($this->dir);
         foreach ($files as $file) {
-            $this->S3copy($file);
+            $fullFilePath = $this->dir  . '/' . $file;
+            $this->S3copy($fullFilePath);
         }
     }
 
@@ -59,14 +60,6 @@ class RunS3BackupTask extends BuildTask {
         return ($files) ? $files : false;
     }
 
-    private function listBuckets(){
-        $s3Client = $this->getS3Client();
-        $buckets = $s3Client->listBuckets();
-        foreach ($buckets['Buckets'] as $bucket) {
-            Debug::dump($bucket['Name']);
-        }
-    }
-
     private function S3copy($file) {
         $s3Client = $this->getS3Client();
         try {
@@ -78,6 +71,13 @@ class RunS3BackupTask extends BuildTask {
         } catch (S3Exception $e) {
             echo $e->getMessage() . "\n";
         }
+    }
 
+    private function listBuckets(){
+        $s3Client = $this->getS3Client();
+        $buckets = $s3Client->listBuckets();
+        foreach ($buckets['Buckets'] as $bucket) {
+            Debug::dump($bucket['Name']);
+        }
     }
 }
