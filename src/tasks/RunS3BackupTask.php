@@ -14,7 +14,7 @@ class RunS3BackupTask extends BuildTask {
 
     protected $title = "S3 Backup";
 
-    protected $dir = ASSETS_PATH;
+    protected $dir = ASSETS_PATH . '/Uploads';
     private $s3Key;
     private $s3Secret;
     private $s3Region;
@@ -26,15 +26,11 @@ class RunS3BackupTask extends BuildTask {
         $this->s3Region = SiteConfig::current_site_config()->s3Region;
         $this->s3BucketName = SiteConfig::current_site_config()->s3BucketName;
 
-        // For testing connection was correct
-        $this->listBuckets();
+//        $this->listBuckets();
 
         $files = $this->scanFiles($this->dir);
         foreach ($files as $file) {
-            $extension = pathinfo(ASSETS_PATH . DIRECTORY_SEPARATOR . $file, PATHINFO_EXTENSION);
-            if ($extension == 'txt') {
-                $this->S3copy($file);
-            }
+            $this->S3copy($file);
         }
     }
 
@@ -73,7 +69,6 @@ class RunS3BackupTask extends BuildTask {
 
     private function S3copy($file) {
         $s3Client = $this->getS3Client();
-
         try {
             $result = $s3Client->putObject([
                 'Bucket' => $this->s3BucketName,
