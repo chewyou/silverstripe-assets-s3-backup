@@ -6,9 +6,13 @@ use SilverStripe\Dev\BuildTask;
 use Aws\S3;
 use Aws\S3\S3Client;
 use Aws\Credentials\Credentials;
+use SilverStripe\Dev\Debug;
+use SilverStripe\SiteConfig\SiteConfig;
 
 class RunS3BackupTask extends BuildTask {
     private static $segment = 'RunS3BackupTask';
+
+    protected $title = "S3 Backup";
 
     protected $dir = ASSETS_PATH;
     private $s3Key;
@@ -22,13 +26,26 @@ class RunS3BackupTask extends BuildTask {
         $this->s3Region = SiteConfig::current_site_config()->s3Region;
         $this->s3BucketName = SiteConfig::current_site_config()->s3BucketName;
 
+        // For testing connection was correct
+        $this->listBuckets();
+
         $files = $this->scanFiles($this->dir);
         foreach ($files as $file) {
             $extension = pathinfo(ASSETS_PATH . DIRECTORY_SEPARATOR . $file, PATHINFO_EXTENSION);
-            if ($extension == 'gz') {
+            if ($extension == 'txt') {
                 $this->S3copy($file);
             }
         }
+    }
+
+    private function getS3Client(){
+        $credentials = new Credentials($this->s3Key, $this->s3Secret);
+        $s3Client = new S3Client([
+            'version'     => 'latest',
+            'region'      => $this->s3Region,
+            'credentials' => $credentials
+        ]);
+        return $s3Client;
     }
 
     private function scanFiles($dir) {
@@ -46,33 +63,26 @@ class RunS3BackupTask extends BuildTask {
         return ($files) ? $files : false;
     }
 
+    private function listBuckets(){
+        $s3Client = $this->getS3Client();
+        $buckets = $s3Client->listBuckets();
+        foreach ($buckets['Buckets'] as $bucket) {
+            Debug::dump($bucket['Name']);
+        }
+    }
+
     private function S3copy($file) {
-        $fileok = true;
-        $credentials = new Credentials($this->s3Key, $this->s3Secret);
+        $s3Client = $this->getS3Client();
 
-        $s3 = S3Client([
-            'version'     => 'latest',
-            'region'      => $this->s3Region,
-            'credentials' => $credentials
-        ]);
-
-        $bucket = $s3->getBucket($this->s3BucketName);
-
-        foreach ($bucket as $existing) {
-            if ($existing['name'] === $file) {
-                $fileok = false;
-            }
+        try {
+            $result = $s3Client->putObject([
+                'Bucket' => $this->s3BucketName,
+                'Key' => basename($file),
+                'SourceFile' => $file,
+            ]);
+        } catch (S3Exception $e) {
+            echo $e->getMessage() . "\n";
         }
 
-        if ($fileok) {
-            $put = $s3->putObject($s3->inputFile(ASSETS_PATH . DIRECTORY_SEPARATOR . $file), $this->s3BucketName, $file, S3::ACL_PRIVATE);
-            if ($put) {
-                echo $file . " transferred to S3<br>" . "\r\n";
-            } else {
-                echo $file . " unable to be transferred to S3<br>" . "\r\n";
-            }
-        } else {
-            echo $file . " already in S3<br>" . "\r\n";
-        }
     }
 }
