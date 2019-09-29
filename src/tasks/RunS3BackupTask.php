@@ -20,7 +20,7 @@ class RunS3BackupTask extends BuildTask {
     private $s3Region;
     private $s3BucketName;
 
-    public function run($request) {
+    public function run() {
         $this->s3Key = SiteConfig::current_site_config()->s3Key;
         $this->s3Secret = SiteConfig::current_site_config()->s3Secret;
         $this->s3Region = SiteConfig::current_site_config()->s3Region;
